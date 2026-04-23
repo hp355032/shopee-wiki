@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蝦皮經營專有名詞百科</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        /* 公式標籤：專業藍色調 */
+        .formula-tag {
+            @apply inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded font-bold text-sm border border-indigo-100 mx-0.5;
+        }
+        /* 卡片懸浮效果 */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+        }
+        /* 隱藏滾動條但保持功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="glass-header sticky top-0 z-50 border-b border-slate-200">
+        <div class="container mx-auto px-4 py-4 md:py-5">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-11 h-11 bg-slate-800 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
+                        蝦皮經營專有名詞百科
+                    </h1>
+                </div>
+                <div class="w-full md:w-96 relative">
+                    <input type="text" id="searchInput" placeholder="搜尋名詞、邏輯或公式..." 
+                           class="w-full pl-11 pr-4 py-2.5 rounded-2xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 transition-all text-sm">
+                    <svg class="w-5 h-5 absolute left-3.5 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+        <div class="mb-12">
+            <p class="text-center text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">分類篩選庫</p>
+            <div id="filterContainer" class="flex flex-nowrap md:flex-wrap gap-2 overflow-x-auto no-scrollbar pb-2 justify-start md:justify-center">
+                <button class="filter-btn active whitespace-nowrap px-6 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800 text-white shadow-md shadow-slate-200" data-category="全部">全部名詞</button>
+            </div>
+        </div>
+
+        <div id="cardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="col-span-full text-center py-24">
+                <div class="inline-block w-8 h-8 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                <p class="text-slate-400 font-medium">系統正在解析專業資料庫...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-16 mt-20">
+        <div class="container mx-auto px-4 text-center">
+            <div class="inline-block px-4 py-1 rounded-full bg-slate-50 border border-slate-100 text-slate-400 text-xs mb-4">
+                實戰教學專用 · 內容即時同步
+            </div>
+            <p class="text-slate-500 text-sm font-medium">蝦皮經營專有名詞百科 © 2026</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 設定區：請將連結貼在此 ---
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQblIgNjAUV4scJdrKGysCV76kJ402uUie56FZCdjn7sguNH_K9QbU7UkjYcuG6Rbh_jMzcmaIqpS-v/pub?output=csv";
+        // -----------------------------
+
+        let glossaryData = [];
+        let categories = new Set(['全部']);
+
+        async function init() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        glossaryData = results.data;
+                        glossaryData.forEach(item => { if(item.類別) categories.add(item.類別); });
+                        renderFilters();
+                        renderCards(glossaryData);
+                    }
+                });
+            } catch (error) {
+                document.getElementById('cardsContainer').innerHTML = `<div class="col-span-full text-center text-red-400 py-10 bg-red-50 rounded-2xl border border-red-100 mx-4">資料連結異常，請確認 Google Sheets 發布設定。</div>`;
+            }
+        }
+
+        function renderFilters() {
+            const container = document.getElementById('filterContainer');
+            Array.from(categories).sort().forEach(cat => {
+                if (cat === '全部') return;
+                const btn = document.createElement('button');
+                btn.className = "filter-btn whitespace-nowrap px-6 py-2 rounded-xl text-sm font-medium transition-all bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600";
+                btn.innerText = cat;
+                btn.dataset.category = cat;
+                container.appendChild(btn);
+            });
+        }
+
+        // 公式偵測與高亮
+        function formatDescription(text) {
+            if (!text) return "";
+            // 匹配「公式 = ...」或「公式：...」
+            return text.replace(/(公式\s*[=：:]\s*[^。，\n]+)/g, '<span class="formula-tag">$1</span>');
+        }
+
+        function renderCards(items) {
+            const container = document.getElementById('cardsContainer');
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-20 text-slate-400">未找到相符的名詞或公式</div>`;
+                return;
+            }
+
+            container.innerHTML = items.map((item, index) => `
+                <div class="card-hover bg-white p-8 rounded-3xl border border-slate-100 flex flex-col relative overflow-hidden group">
+                    <div class="absolute -top-1 -right-1 bg-slate-50 text-slate-400 font-mono font-bold text-[10px] w-12 h-12 flex items-center justify-center rounded-bl-3xl border-l border-b border-slate-50 transition-colors group-hover:bg-indigo-50 group-hover:text-indigo-400">
+                        #${String(index + 1).padStart(2, '0')}
+                    </div>
+                    
+                    <div class="mb-5">
+                        <span class="inline-block px-3 py-1 bg-indigo-50/50 text-indigo-600 text-[10px] font-bold rounded-lg border border-indigo-100/50 mb-3 uppercase tracking-wider">
+                            ${item.類別}
+                        </span>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">
+                            ${item.專有名詞}
+                        </h2>
+                    </div>
+                    
+                    <div class="h-1 bg-slate-50 w-12 mb-6 rounded-full transition-all group-hover:w-full group-hover:bg-indigo-100"></div>
+                    
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        ${formatDescription(item.詳細解釋)}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        // 搜尋邏輯
+        document.getElementById('searchInput').addEventListener('input', () => filterData());
+
+        // 分類點擊
+        document.getElementById('filterContainer').addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('bg-slate-800', 'text-white', 'shadow-md', 'active');
+                    btn.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+                });
+                e.target.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+                e.target.classList.add('bg-slate-800', 'text-white', 'shadow-md', 'active');
+                filterData(e.target.dataset.category);
+            }
+        });
+
+        function filterData(currentCategory = document.querySelector('.filter-btn.active').dataset.category) {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = glossaryData.filter(item => {
+                const matchCat = (currentCategory === '全部' || item.類別 === currentCategory);
+                const matchText = (item.專有名詞.toLowerCase().includes(query) || item.詳細解釋.toLowerCase().includes(query));
+                return matchCat && matchText;
+            });
+            renderCards(filtered);
+        }
+
+        init();
+    </script>
+</body>
+</html>
